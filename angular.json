@@ -23,7 +23,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/angular-incremental-static-regeneration",
+            "outputPath": "dist/angular-incremental-static-regeneration/browser",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": [
@@ -101,6 +101,60 @@
             ],
             "scripts": []
           }
+        },
+        "server": {
+          "builder": "@angular-devkit/build-angular:server",
+          "options": {
+            "outputPath": "dist/angular-incremental-static-regeneration/server",
+            "main": "server.ts",
+            "tsConfig": "tsconfig.server.json"
+          },
+          "configurations": {
+            "production": {
+              "outputHashing": "media"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "sourceMap": true,
+              "extractLicenses": false,
+              "vendorChunk": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve-ssr": {
+          "builder": "@nguniversal/builders:ssr-dev-server",
+          "configurations": {
+            "development": {
+              "browserTarget": "angular-incremental-static-regeneration:build:development",
+              "serverTarget": "angular-incremental-static-regeneration:server:development"
+            },
+            "production": {
+              "browserTarget": "angular-incremental-static-regeneration:build:production",
+              "serverTarget": "angular-incremental-static-regeneration:server:production"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "prerender": {
+          "builder": "@nguniversal/builders:prerender",
+          "options": {
+            "routes": [
+              "/"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "angular-incremental-static-regeneration:build:production",
+              "serverTarget": "angular-incremental-static-regeneration:server:production"
+            },
+            "development": {
+              "browserTarget": "angular-incremental-static-regeneration:build:development",
+              "serverTarget": "angular-incremental-static-regeneration:server:development"
+            }
+          },
+          "defaultConfiguration": "production"
         }
       }
     }
