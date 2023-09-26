@@ -1,17 +1,27 @@
 import 'zone.js/node';
 
-import { APP_BASE_HREF } from '@angular/common';
+// import { APP_BASE_HREF } from '@angular/common';
 import { ngExpressEngine } from '@nguniversal/express-engine';
 import * as express from 'express';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import bootstrap from './src/main.server';
+// 1. 👇 Import the ISRHandler class
+import { ISRHandler } from '@rx-angular/isr/server'; 
+// import { environment } from './src/environments/environment';
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
   const server = express();
   const distFolder = join(process.cwd(), 'dist/angular-incremental-static-regeneration/browser');
   const indexHtml = existsSync(join(distFolder, 'index.original.html')) ? 'index.original.html' : 'index';
+
+  // 2. 👇 Instantiate the ISRHandler class with the index.html file
+  const isr = new ISRHandler({
+    indexHtml, // 👈 The index.html file
+    invalidateSecretToken: process.env['INVALIDATE_TOKEN'] || 'MY_TOKEN', // 👈 The secret token used to invalidate the cache
+    //enableLogging: !environment.production, // 👈 Enable logging in dev mode, create environment folder using "ng generate environments" to use it
+  });
 
   // Our Universal express-engine (found @ https://github.com/angular/universal/tree/main/modules/express-engine)
   server.engine('html', ngExpressEngine({
@@ -28,10 +38,20 @@ export function app(): express.Express {
     maxAge: '1y'
   }));
 
+  // 3. 👇 Use the ISRHandler to handle the requests
+  server.get(
+    '*',
+    // Serve page if it exists in cache
+    async (req, res, next) => await isr.serveFromCache(req, res, next),
+    // Server side render the page and add to cache if needed
+    async (req, res, next) => await isr.render(req, res, next)
+  );
+
+  // 4: 👇 Comment out default angular universal handler, because it's will be handled in ISR render method
   // All regular routes use the Universal engine
-  server.get('*', (req, res) => {
-    res.render(indexHtml, { req, providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }] });
-  });
+  // server.get('*', (req, res) => {
+  //   res.render(indexHtml, { req, providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }] });
+  // });
 
   return server;
 }
