@@ -1,4 +1,6 @@
-# AngularIncrementalStaticRegeneration
+https://lachimi.com/incremental-static-regeneration-isr-for-angular
+
+# Angular Incremental Static Regeneration
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.2.1.
 
