@@ -1,4 +1,4 @@
-<h1>**Angular Incremental Static Regeneration**</h1>
+<h1><b>Angular Incremental Static Regeneration</b></h1>
 
 #lachimi #angular #isr #deploy
 
